@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Fee Calculator</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            margin: 20px;
+            background: linear-gradient(to bottom right, #555, #111);
+            color: white;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(to bottom right, #333, #222);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #990000;
+            font-size: 36px;
+        }
+        label {
+            margin: 5px 0;
+            color: white;
+        }
+        input, select {
+            width: 60px;
+            padding: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+        }
+        button {
+            background-color: #990000;
+            color: white;
+            padding: 10px;
+            border: none;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #800000;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #111;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .dungeon-fields {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #222;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .center {
+            text-align: center;
+        }
+        .dungeon-controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .dungeon-controls input {
+            width: 60px;
+            font-size: 12px;
+        }
+        .dungeon-controls button {
+            padding: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            background-color: #990000;
+            color: white;
+            border-radius: 4px;
+            width: 25px;
+            height: 25px;
+            display: inline-block;
+            text-align: center;
+            margin: 0 5px;
+        }
+        .dungeon-number {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .small-button {
+			padding: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            background-color: #990000;
+            color: white;
+            border-radius: 4px;
+            width: 25px;
+            height: 25px;
+            display: inline-block;
+            text-align: center;
+			
+        }
+        .raid-missing-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        select {
+            width: 50px;
+        }
+        #dungeonLabel {
+            text-align: center;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        /* Legend Modal Styles */
+        #legendModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        #legendContent {
+            background-color: #333;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 100%;
+            max-width: 800px; /* Same as container width */
+            color: white;
+        }
+        #closeLegend {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #closeLegend:hover,
+        #closeLegend:focus {
+            color: red;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* Legend Button Positioned at Top Right */
+        .legend-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+			width: 80px;
+            padding: 5px 10px;
+            background-color: #990000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .legend-button:hover {
+            background-color: #800000;
+        }
+		.space {
+            margin: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Map Fee Calculator</h1>
+
+        <!-- Legend button at the top-right corner -->
+        <button class="legend-button" onclick="showLegend()">How to Use</button>
+
+        <!-- Label for number of dungeons, centered above controls -->
+        <label id="dungeonLabel" for="numDungeons">Number of Dungeons</label>
+
+        <!-- Dungeon count control with + and - buttons -->
+        <div class="dungeon-controls">
+            <button onclick="changeDungeonCount(-1)">-</button>
+            <input type="number" id="numDungeons" min="1" value="1" onchange="generateDungeonFields()">
+            <button onclick="changeDungeonCount(1)">+</button>
+        </div>
+
+        <!-- Container for dynamically adding dungeon input fields -->
+        <div id="dungeonInputs"></div>
+
+        <!-- Calculate Fees Button -->
+        <button onclick="calculateFees()">Calculate Fees</button>
+
+        <!-- Result output -->
+        <div id="result" class="result" style="display: none;">
+            <p id="individualFees"></p>
+            <p id="totalFee"></p>
+        </div>
+
+        <!-- Legend modal -->
+        <div id="legendModal">
+            <div id="legendContent">
+                <span id="closeLegend">&times;</span>
+                <h2>How to Use</h2>
+                <p>You use the number of dungeons scale to select how many dungeons you did in total.</p>
+                <p>You then select individual tier and chest quality for said dungeon, afterward you also select raid quality and missing people.</p>
+                <ul>
+                    <li><b>Dungeon Quality:</b> Was your raid good or bad? 0 = a good raid, 5 = a bad raid. The fee will be reduced slightly if you increase this number, with a decently high reduction at 5.</li>
+                    <li><b>Missing People:</b> How many people were missing for said dungeon. The fee will be increased to accommodate the missing people and make it fair.</li>
+                </ul>
+                <p>Lastly, you click on "Calculate Fees" and the total fees for each dungeon + double fee will show up.</p>
+                <p><i>Example - Dungeon Y: xxx xxx Silver (double fee: zzz zzz)</i></p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Fee table for different map tiers and chest types
+        const feeTables = {
+            '8.1': { '2g': 250000, '1g': 200000, '2x2p': 150000, '1x2p': 100000, 'No': 50000 },
+            '8.2': { '2g': 450000, '1g': 400000, '2x2p': 350000, '1x2p': 250000, 'No': 200000 },
+            '8.3': { '2g': 1000000, '1g': 900000, '2x2p': 800000, '1x2p': 750000, 'No': 700000 }
+        };
+
+        // Missing people multiplier table
+        const missingPeopleTable = [0, 0.05, 0.11, 0.18, 0.26, 0.35];
+
+        // Store currently generated dungeon configurations
+        let dungeonData = [];
+
+        // Handle + and - buttons to change dungeon count
+        function changeDungeonCount(delta) {
+            let numDungeons = parseInt(document.getElementById('numDungeons').value);
+            if (numDungeons + delta >= 1) {
+                document.getElementById('numDungeons').value = numDungeons + delta;
+                generateDungeonFields();
+            }
+        }
+
+        // Generate fields dynamically based on number of dungeons
+        function generateDungeonFields() {
+            const numDungeons = parseInt(document.getElementById('numDungeons').value);
+
+            if (numDungeons > dungeonData.length) {
+                for (let i = dungeonData.length + 1; i <= numDungeons; i++) {
+                    dungeonData.push({ tier: '8.1', chest: '2g', raidQuality: 0, missing: 0 });
+                }
+            } else {
+                dungeonData = dungeonData.slice(0, numDungeons);
+            }
+
+            let dungeonInputsDiv = document.getElementById('dungeonInputs');
+            dungeonInputsDiv.innerHTML = '';
+            dungeonData.forEach((dungeon, i) => {
+                dungeonInputsDiv.innerHTML += `
+                    <div class="dungeon-fields">
+                        <div class="dungeon-number">Dungeon ${i + 1}</div>
+                        <div>
+                            <label for="tier${i}">Tier:</label>
+                            <select id="tier${i}" style="width: auto;" onchange="updateDungeonData(${i})">
+                                <option value="8.1" ${dungeon.tier === '8.1' ? 'selected' : ''}>8.1</option>
+                                <option value="8.2" ${dungeon.tier === '8.2' ? 'selected' : ''}>8.2</option>
+                                <option value="8.3" ${dungeon.tier === '8.3' ? 'selected' : ''}>8.3</option>
+                            </select>
+                            <br><div class="space"></div>
+                            <label for="chest${i}">Chests:</label>
+                            <select id="chest${i}" style="min-width: 40px; width: auto;" onchange="updateDungeonData(${i})">
+                                <option value="2g" ${dungeon.chest === '2g' ? 'selected' : ''}>2G (2x1G, 4x2P)</option>
+                                <option value="1g" ${dungeon.chest === '1g' ? 'selected' : ''}>1G (3x2P)</option>
+                                <option value="2x2p" ${dungeon.chest === '2x2p' ? 'selected' : ''}>2x2P</option>
+                                <option value="1x2p" ${dungeon.chest === '1x2p' ? 'selected' : ''}>1x2P</option>
+                                <option value="No" ${dungeon.chest === 'No' ? 'selected' : ''}>No</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="raidQuality${i}">Dungeon Quality (0-5):</label>
+                            <div class="raid-missing-controls">
+                                <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', -1)">-</button>
+                                <input type="number" id="raidQuality${i}" min="0" max="5" value="${dungeon.raidQuality}" onchange="limitValue('raidQuality${i}')">
+                                <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', 1)">+</button>
+                            </div>
+                            <label for="missing${i}">Missing People (0-5):</label>
+                            <div class="raid-missing-controls">
+                                <button class="small-button" onclick="adjustValue(${i}, 'missing', -1)">-</button>
+                                <input type="number" id="missing${i}" min="0" max="5" value="${dungeon.missing}" onchange="limitValue('missing${i}')">
+                                <button class="small-button" onclick="adjustValue(${i}, 'missing', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // Adjust raid quality and missing people values with + and - buttons
+        function adjustValue(index, field, delta) {
+            const input = document.getElementById(`${field}${index}`);
+            const newValue = Math.max(0, Math.min(5, parseInt(input.value) + delta));
+            input.value = newValue;
+            updateDungeonData(index);
+        }
+		
+		// Make sure raid quality and missing people is within allowed ranged
+		function limitValue(inputId) {
+			const input = document.getElementById(inputId);
+			let currentValue = parseInt(input.value);
+
+			// Check if value is below 0 or above 5, and adjust accordingly
+			if (currentValue < 0) {
+				input.value = 0;
+			} else if (currentValue > 5) {
+				input.value = 5;
+			}
+		}
+
+
+        // Update dungeon data on field change
+        function updateDungeonData(index) {
+            const tier = document.getElementById(`tier${index}`).value;
+            const chest = document.getElementById(`chest${index}`).value;
+            const raidQuality = parseInt(document.getElementById(`raidQuality${index}`).value);
+            const missing = parseInt(document.getElementById(`missing${index}`).value);
+            dungeonData[index] = { tier, chest, raidQuality, missing };
+        }
+
+        // Save current dungeon data before regenerating fields
+        function saveDungeonData() {
+            dungeonData.forEach((dungeon, i) => {
+                dungeon.tier = document.getElementById(`tier${i}`)?.value || '8.1';
+                dungeon.chest = document.getElementById(`chest${i}`)?.value || '2g';
+                dungeon.raidQuality = parseInt(document.getElementById(`raidQuality${i}`)?.value) || 0;
+                dungeon.missing = parseInt(document.getElementById(`missing${i}`)?.value) || 0;
+            });
+        }
+
+        // Calculate fees and display the result
+        function calculateFees() {
+            let totalFee = 0;
+            let individualFeesText = '';
+            dungeonData.forEach((dungeon, i) => {
+                const baseFee = feeTables[dungeon.tier][dungeon.chest];
+                const raidQualityMultiplier = 1 - (dungeon.raidQuality * 0.04);
+                const missingPeopleMultiplier = 1 + missingPeopleTable[dungeon.missing];
+                let fee = baseFee * raidQualityMultiplier * missingPeopleMultiplier;
+
+                // Rounding to 10,000 (up)
+				fee= Math.ceil(fee / 10000) * 10000;
+
+                // Max cap for 8.1, 8.2, and 8.3
+                if (dungeon.tier === '8.1') fee = Math.min(fee, 250000*missingPeopleMultiplier);
+                if (dungeon.tier === '8.2') fee = Math.min(fee, 450000*missingPeopleMultiplier);
+                if (dungeon.tier === '8.3') fee = Math.min(fee, 1000000*missingPeopleMultiplier);
+
+                const doubleFee = fee * 2;
+
+                individualFeesText += `Dungeon ${i + 1}: ${fee.toLocaleString()} Silver (double fee: ${doubleFee.toLocaleString()})<br>`;
+                totalFee += fee;
+            });
+
+            document.getElementById('individualFees').innerHTML = individualFeesText;
+            document.getElementById('totalFee').innerHTML = `Total Fee: ${totalFee.toLocaleString()} Silver`;
+
+            document.getElementById('result').style.display = 'block';
+        }
+
+        // Show legend modal
+        function showLegend() {
+            document.getElementById('legendModal').style.display = 'block';
+        }
+
+        // Hide legend modal
+        document.getElementById('closeLegend').onclick = function () {
+            document.getElementById('legendModal').style.display = 'none';
+        };
+
+        // Initial field generation
+        window.onload = generateDungeonFields;
+    </script>
+</body>
+</html>
