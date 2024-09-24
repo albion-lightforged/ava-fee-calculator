@@ -134,7 +134,7 @@
             display: none;
             position: fixed;
             z-index: 1;
-            padding-top: 50px;
+            padding-top: 20px;
             left: 0;
             top: 0;
             width: 100%;
@@ -236,16 +236,21 @@
 				<br><br>
 				
 				<b>Missing People:</b> Missing People determines a fee increase to accommodate the lower number of people.
-				<br> Missing People 0 / 0% fee increase
-				<br> Missing People 1 / 5% fee increase
-				<br> Missing People 2 / 11% fee increase
-				<br> Missing People 3 / 18% fee increase
-				<br> Missing People 4 / 26% fee increase
-				<br> Missing People 5 / 35% fee increase
+				<br> 0 Missing People / 0% fee increase
+				<br> 1 Missing People / 5% fee increase
+				<br> 2 Missing People / 11% fee increase
+				<br> 3 Missing People / 18% fee increase
+				<br> 4 Missing People / 26% fee increase
+				<br> 5 Missing People / 35% fee increase
+				<br> 6 Missing People / 46% fee increase
+				<br> 7 Missing People / 58% fee increase
+				<br> 8 Missing People / 72% fee increase
+				<br> 9 Missing People / 90% fee increase
+				<br> 10 Missing People / 110% fee increase
                 <p>Lastly, you click on "Calculate Fees" and the fee for each dungeon + double fee will show up along with the combined total fee.</p>
 				Example:
 				<br>Dungeon X: ooo ooo Silver (double fee: ooo ooo)
-				<br>Total Fee: ooo ooo Silver)
+				<br>Total Fee: ooo ooo Silver
             </div>
         </div>
 
@@ -263,7 +268,7 @@
         const raidQualityTable = [0, 0.05, 0.10, 0.2, 0.35, 0.50];
 
         // Missing people multiplier table
-        const missingPeopleTable = [0, 0.05, 0.11, 0.18, 0.26, 0.35];
+        const missingPeopleTable = [0, 0.05, 0.11, 0.18, 0.26, 0.35, 0.46, 0.58, 0.72, 0.9, 1.1];
 
         // Store currently generated dungeon configurations
         let dungeonData = [];
@@ -316,13 +321,13 @@
                             <label for="raidQuality${i}">Dungeon Quality (0-5):</label>
                             <div class="raid-missing-controls">
                                 <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', -1)">-</button>
-                                <input type="number" id="raidQuality${i}" min="0" max="5" value="${dungeon.raidQuality}" onchange="limitValue('raidQuality${i}')" readonly class="no-spinners">
+                                <input type="number" id="raidQuality${i}" min="0" max="5" value="${dungeon.raidQuality}" onchange="limitValue5('raidQuality${i}')" readonly class="no-spinners">
                                 <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', 1)">+</button>
                             </div>
-                            <label for="missing${i}">Missing People (0-5):</label>
+                            <label for="missing${i}">Missing People (0-10):</label>
                             <div class="raid-missing-controls">
                                 <button class="small-button" onclick="adjustValue(${i}, 'missing', -1)">-</button>
-                                <input type="number" id="missing${i}" min="0" max="5" value="${dungeon.missing}" onchange="limitValue('missing${i}')" readonly class="no-spinners">
+                                <input type="number" id="missing${i}" min="0" max="10" value="${dungeon.missing}" onchange="limitValue10('missing${i}')" readonly class="no-spinners">
                                 <button class="small-button" onclick="adjustValue(${i}, 'missing', 1)">+</button>
                             </div>
                         </div>
@@ -338,8 +343,8 @@
             updateDungeonData(index);
         }
 		
-		// Make sure raid quality and missing people is within allowed ranged
-		function limitValue(inputId) {
+		// Make sure raid quality is within allowed ranged
+		function limitValue5(inputId) {
 			const input = document.getElementById(inputId);
 			let currentValue = parseInt(input.value);
 
@@ -350,7 +355,19 @@
 				input.value = 5;
 			}
 		}
+		
+		// Make sure missing people is within allowed ranged
+		function limitValue10(inputId) {
+			const input = document.getElementById(inputId);
+			let currentValue = parseInt(input.value);
 
+			// Check if value is below 0 or above 10, and adjust accordingly
+			if (currentValue < 0) {
+				input.value = 0;
+			} else if (currentValue > 10) {
+				input.value = 10;
+			}
+		}
 
         // Update dungeon data on field change
         function updateDungeonData(index) {
