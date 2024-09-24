@@ -320,15 +320,15 @@
                         <div>
                             <label for="raidQuality${i}">Dungeon Quality (0-5):</label>
                             <div class="raid-missing-controls">
-                                <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', -1)">-</button>
+                                <button class="small-button" onclick="adjustValue5(${i}, 'raidQuality', -1)">-</button>
                                 <input type="number" id="raidQuality${i}" min="0" max="5" value="${dungeon.raidQuality}" onchange="limitValue5('raidQuality${i}')" readonly class="no-spinners">
-                                <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', 1)">+</button>
+                                <button class="small-button" onclick="adjustValue5(${i}, 'raidQuality', 1)">+</button>
                             </div>
                             <label for="missing${i}">Missing People (0-10):</label>
                             <div class="raid-missing-controls">
-                                <button class="small-button" onclick="adjustValue(${i}, 'missing', -1)">-</button>
+                                <button class="small-button" onclick="adjustValue10(${i}, 'missing', -1)">-</button>
                                 <input type="number" id="missing${i}" min="0" max="10" value="${dungeon.missing}" onchange="limitValue10('missing${i}')" readonly class="no-spinners">
-                                <button class="small-button" onclick="adjustValue(${i}, 'missing', 1)">+</button>
+                                <button class="small-button" onclick="adjustValue10(${i}, 'missing', 1)">+</button>
                             </div>
                         </div>
                     </div>`;
@@ -336,9 +336,15 @@
         }
 
         // Adjust raid quality and missing people values with + and - buttons
-        function adjustValue(index, field, delta) {
+        function adjustValue5(index, field, delta) {
             const input = document.getElementById(`${field}${index}`);
             const newValue = Math.max(0, Math.min(5, parseInt(input.value) + delta));
+            input.value = newValue;
+            updateDungeonData(index);
+        }
+		function adjustValue10(index, field, delta) {
+            const input = document.getElementById(`${field}${index}`);
+            const newValue = Math.max(0, Math.min(10, parseInt(input.value) + delta));
             input.value = newValue;
             updateDungeonData(index);
         }
