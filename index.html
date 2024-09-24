@@ -11,6 +11,7 @@
             background: linear-gradient(to bottom right, #555, #111);
             color: white;
         }
+		html, body { height: auto; margin: 0; padding: 0; min-height: 100vh;}
         .container {
             max-width: 950px;
             margin: 0 auto;
@@ -28,6 +29,7 @@
         label {
             margin: 5px 0;
             color: white;
+			transform: translate(0px, 2px);
         }
         input, select {
             width: 60px;
@@ -93,6 +95,7 @@
             display: inline-block;
             text-align: center;
             margin: 0 5px;
+			transform: translate(0px, 2px);
         }
         .dungeon-number {
             font-weight: bold;
@@ -110,7 +113,7 @@
             height: 25px;
             display: inline-block;
             text-align: center;
-			
+			transform: translate(0px, -4px);
         }
         .raid-missing-controls {
             display: flex;
@@ -131,7 +134,7 @@
             display: none;
             position: fixed;
             z-index: 1;
-            padding-top: 100px;
+            padding-top: 50px;
             left: 0;
             top: 0;
             width: 100%;
@@ -165,7 +168,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
-			width: 80px;
+			width: 120px;
             padding: 5px 10px;
             background-color: #990000;
             color: white;
@@ -179,6 +182,9 @@
 		.space {
             margin: 4px;
         }
+		input[type="number"].no-spinners {
+			-moz-appearance: textfield;
+		}		
     </style>
 </head>
 <body>
@@ -195,7 +201,7 @@
         <!-- Dungeon count control with + and - buttons -->
         <div class="dungeon-controls">
             <button onclick="changeDungeonCount(-1)">-</button>
-            <input type="number" id="numDungeons" min="1" value="1" onchange="generateDungeonFields()">
+            <input type="number" id="numDungeons" min="1" value="1" onchange="generateDungeonFields()" class="no-spinners">
             <button onclick="changeDungeonCount(1)">+</button>
         </div>
 
@@ -216,14 +222,30 @@
             <div id="legendContent">
                 <span id="closeLegend">&times;</span>
                 <h2>How to Use</h2>
-                <p>You use the number of dungeons scale to select how many dungeons you did in total.</p>
-                <p>You then select individual tier and chest quality for said dungeon, afterward you also select raid quality and missing people.</p>
-                <ul>
-                    <li><b>Dungeon Quality:</b> Was your raid good or bad? 0 = a good raid, 5 = a bad raid. The fee will be reduced slightly if you increase this number, with a decently high reduction at 5.</li>
-                    <li><b>Missing People:</b> How many people were missing for said dungeon. The fee will be increased to accommodate the missing people and make it fair.</li>
-                </ul>
-                <p>Lastly, you click on "Calculate Fees" and the total fees for each dungeon + double fee will show up.</p>
-                <p><i>Example - Dungeon Y: xxx xxx Silver (double fee: zzz zzz)</i></p>
+                <p>First, You use the number of dungeons scale to select how many dungeons you did in total. (you can always add more dungeons)</p>
+                <p>Second, You select individual tier and chest quality for each dungeon.</p>
+				<p>Third, you select raid quality and missing people for each dungeon.</p>
+				<b>Dungeon Quality:</b> Raid quality determines a fee decrese to accommodate a bad dungeon/raid.
+				<br> Dungeon Quality 0 = Perfect Dungeon / No Mistakes / 0% fee reduction
+				<br> Dungeon Quality 1 = Good Dungeon / Minor Mistakes / 5% fee reduction
+				<br> Dungeon Quality 2 = Average Dungeon / Some Mistakes / 10% fee reduction
+				<br> Dungeon Quality 3 = Bad Dungeon / Major Mistakes / 20% fee reduction
+				<br> Dungeon Quality 4 = Very Bad Dungeon / Numerous Major Mistakes / 35% fee reduction
+				<br> Dungeon Quality 5 = Worst Dungeon / Extreme ammount of Major Mistakes / 50% fee reduction
+				
+				<br><br>
+				
+				<b>Missing People:</b> Missing People determines a fee increase to accommodate the lower number of people.
+				<br> Missing People 0 / 0% fee increase
+				<br> Missing People 1 / 5% fee increase
+				<br> Missing People 2 / 11% fee increase
+				<br> Missing People 3 / 18% fee increase
+				<br> Missing People 4 / 26% fee increase
+				<br> Missing People 5 / 35% fee increase
+                <p>Lastly, you click on "Calculate Fees" and the fee for each dungeon + double fee will show up along with the combined total fee.</p>
+				Example:
+				<br>Dungeon X: ooo ooo Silver (double fee: ooo ooo)
+				<br>Total Fee: ooo ooo Silver)
             </div>
         </div>
 
@@ -236,6 +258,9 @@
             '8.2': { '2g': 450000, '1g': 400000, '2x2p': 350000, '1x2p': 250000, 'No': 200000 },
             '8.3': { '2g': 1000000, '1g': 900000, '2x2p': 800000, '1x2p': 750000, 'No': 700000 }
         };
+
+		// Raid quality multiplier reduction table
+        const raidQualityTable = [0, 0.05, 0.10, 0.2, 0.35, 0.50];
 
         // Missing people multiplier table
         const missingPeopleTable = [0, 0.05, 0.11, 0.18, 0.26, 0.35];
@@ -258,7 +283,7 @@
 
             if (numDungeons > dungeonData.length) {
                 for (let i = dungeonData.length + 1; i <= numDungeons; i++) {
-                    dungeonData.push({ tier: '8.1', chest: '2g', raidQuality: 0, missing: 0 });
+                    dungeonData.push({ tier: '8.1', chest: 'No', raidQuality: 0, missing: 0 });
                 }
             } else {
                 dungeonData = dungeonData.slice(0, numDungeons);
@@ -273,9 +298,9 @@
                         <div>
                             <label for="tier${i}">Tier:</label>
                             <select id="tier${i}" style="width: auto;" onchange="updateDungeonData(${i})">
+							    <option value="8.3" ${dungeon.tier === '8.3' ? 'selected' : ''}>8.3</option>
+								<option value="8.2" ${dungeon.tier === '8.2' ? 'selected' : ''}>8.2</option>
                                 <option value="8.1" ${dungeon.tier === '8.1' ? 'selected' : ''}>8.1</option>
-                                <option value="8.2" ${dungeon.tier === '8.2' ? 'selected' : ''}>8.2</option>
-                                <option value="8.3" ${dungeon.tier === '8.3' ? 'selected' : ''}>8.3</option>
                             </select>
                             <br><div class="space"></div>
                             <label for="chest${i}">Chests:</label>
@@ -291,13 +316,13 @@
                             <label for="raidQuality${i}">Dungeon Quality (0-5):</label>
                             <div class="raid-missing-controls">
                                 <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', -1)">-</button>
-                                <input type="number" id="raidQuality${i}" min="0" max="5" value="${dungeon.raidQuality}" onchange="limitValue('raidQuality${i}')">
+                                <input type="number" id="raidQuality${i}" min="0" max="5" value="${dungeon.raidQuality}" onchange="limitValue('raidQuality${i}')" readonly class="no-spinners">
                                 <button class="small-button" onclick="adjustValue(${i}, 'raidQuality', 1)">+</button>
                             </div>
                             <label for="missing${i}">Missing People (0-5):</label>
                             <div class="raid-missing-controls">
                                 <button class="small-button" onclick="adjustValue(${i}, 'missing', -1)">-</button>
-                                <input type="number" id="missing${i}" min="0" max="5" value="${dungeon.missing}" onchange="limitValue('missing${i}')">
+                                <input type="number" id="missing${i}" min="0" max="5" value="${dungeon.missing}" onchange="limitValue('missing${i}')" readonly class="no-spinners">
                                 <button class="small-button" onclick="adjustValue(${i}, 'missing', 1)">+</button>
                             </div>
                         </div>
@@ -352,7 +377,7 @@
             let individualFeesText = '';
             dungeonData.forEach((dungeon, i) => {
                 const baseFee = feeTables[dungeon.tier][dungeon.chest];
-                const raidQualityMultiplier = 1 - (dungeon.raidQuality * 0.04);
+                const raidQualityMultiplier = 1 - raidQualityTable[dungeon.raidQuality];
                 const missingPeopleMultiplier = 1 + missingPeopleTable[dungeon.missing];
                 let fee = baseFee * raidQualityMultiplier * missingPeopleMultiplier;
 
